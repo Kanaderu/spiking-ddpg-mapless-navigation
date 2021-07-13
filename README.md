@@ -33,13 +33,13 @@ Guangzhi Tang, Neelesh Kumar, and Konstantinos P. Michmizos.
 
 #### 1. Basic Requirements
 
-* Ubuntu 16.04
-* Python 3.5.2
-* ROS Kinetic (with Gazebo 7.0)
-* PyTorch 1.2 (with CUDA 10.0 and tensorboard 2.1)
-* NxSDK 0.9
+* Ubuntu 20.04
+* Python 3.8
+* ROS Noetic (with Gazebo 11.x)
+* PyTorch 1.2 (with CUDA 11.3 and tensorboard 2.1)
+* NxSDK 1.0.0
 
-ROS Kinetic is not compatible with Python 3 by default, if you have issues with using Python 3 with ROS, please follow this [link](https://medium.com/@beta_b0t/how-to-setup-ros-with-python-3-44a69ca36674) to resolve them. We use the default Python 2 environment to execute `roslaunch` and `rosrun`.
+ROS Noetic runs on Python 3 by default, if you have issues with using Python 3 with ROS. We use the default Python 3 environment to execute `roslaunch` and `rosrun`.
 
 A CUDA enabled GPU is not required but preferred for training within the SDDPG framework. 
 The results in the paper are generated from models trained using both Nvidia Tesla K40c and Nvidia GeForce RTX 2080Ti.
@@ -53,18 +53,10 @@ We have provided the `requirements.txt` for the python environment without NxSDK
 
 The simulation environment simulates a Turtlebot2 robot with a 360 degree LiDAR in the Gazebo simulator.
 
-Turtlebot2 dependency can be installed using:
-
-```bash
-sudo apt-get install ros-kinetic-turtlebot-*
-```
+Turtlebot2 dependencies are included in the repository.
 
 We use the Hokuyo LiDAR model in the simulation and set the parameters to be the same as the RPLIDAR S1.
-LiDAR dependency can be installed using:
-
-```bash
-sudo apt-get install ros-kinetic-urg-node
-```
+LiDAR dependency is included in the repository.
 
 Download the project and compile the catkin workspace:
 
@@ -80,7 +72,7 @@ source <Dir>/<Project Name>/ros/catkin_ws/devel/setup.bash
 export TURTLEBOT_3D_SENSOR="hokuyo"
 ```
 
-Run `source ~/.bashrc` afterward and test the environment setup by running (use Python 2 environment):
+Run `source ~/.bashrc` afterward and test the environment setup by running:
 
 ```bash
 roslaunch turtlebot_lidar turtlebot_world.launch
@@ -100,7 +92,7 @@ This can be done by adding a tf publisher node in `minimal.launch` from `turtleb
 <node name="base2laser" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 1 0 /base_link /laser 50">
 ```
 
-Test the setup by running (use Python 2 environment):
+Test the setup by running:
 
 ```bash
 roslaunch turtlebot_bringup minimal.launch
@@ -118,19 +110,19 @@ in separate terminals on the laptop controlling Turtlebot2.
 
 #### 1. Training SDDPG ####
 
-To train the SDDPG, you need to first launch the training world including 4 different environments (use Python 2 environment and absolute path for `<Dir>`):
+To train the SDDPG, you need to first launch the training world including 4 different environments (use absolute path for `<Dir>`):
 
 ```bash
 roslaunch turtlebot_lidar turtlebot_world.launch world_file:=<Dir>/<Project Name>/ros/worlds/training_worlds.world
 ```
 
-Then, run the `laserscan_simple` ros node in a separate terminal to sample laser scan data every 10 degrees (use Python 2 environment):
+Then, run the `laserscan_simple` ros node in a separate terminal to sample laser scan data every 10 degrees:
 
 ```bash
 rosrun simple_laserscan laserscan_simple
 ```
 
-Now, we have all ros prerequisites for training. Execute the following commands to start the training in a new terminal (use Python 3 environment):
+Now, we have all ros prerequisites for training. Execute the following commands to start the training in a new terminal:
 
 ```bash
 source <Dir to Python 3 Virtual Env>/bin/activate
@@ -145,7 +137,7 @@ If you want to perform the training on CPU, you can set `--cuda` to 0.
 You can also train for different inference timesteps of SNN by setting `--step` to the desired number. 
 
 In addition, we also have the state-of-the-art DDPG implementation that trains a non-spiking deep actor network for mapless navigation.
-If you want to train the DDPG network, run the following commands to start the training in a new terminal (use Python 3 environment):
+If you want to train the DDPG network, run the following commands to start the training in a new terminal:
 
 ```bash
 source <Dir to Python 3 Virtual Env>/bin/activate
@@ -155,19 +147,19 @@ python train_ddpg.py --cuda 1
 
 #### 2. Evaluate in simulated environment ####
 
-To evaluate the trained Spiking Actor Network (SAN) in Gazebo, you need to first launch the evaluation world (use Python 2 environment and absolute path for `<Dir>`):
+To evaluate the trained Spiking Actor Network (SAN) in Gazebo, you need to first launch the evaluation world (use absolute path for `<Dir>`):
 
 ```bash
 roslaunch turtlebot_lidar turtlebot_world.launch world_file:=<Dir>/<Project Name>/ros/worlds/evaluation_world.world
 ```
 
-Then, run the `laserscan_simple` ros node in a separate terminal to sample laser scan data every 10 degrees (use Python 2 environment):
+Then, run the `laserscan_simple` ros node in a separate terminal to sample laser scan data every 10 degrees:
 
 ```bash
 rosrun simple_laserscan laserscan_simple
 ```
 
-Now, we have all ros prerequisites for evaluation. Run the following commands to start the evaluation in a new terminal (use Python 3 environment):
+Now, we have all ros prerequisites for evaluation. Run the following commands to start the evaluation in a new terminal:
 
 ```bash
 source <Dir to Python 3 Virtual Env>/bin/activate
@@ -182,7 +174,7 @@ If you want to perform the evaluation on CPU, you can set `--cuda` to 0.
 You can also evaluate for different inference timesteps of SNN by setting `--step` to the desired number.
 
 To deploy the trained SAN on Loihi and evaluate in Gazebo, you need to have the Loihi hardware. 
-If you have the Kapoho Bay USB chipset, run the following commands to start the evaluation (use Python 3 environment):
+If you have the Kapoho Bay USB chipset, run the following commands to start the evaluation:
 
 ```bash
 source <Dir to Python 3 Virtual Env>/bin/activate
@@ -195,7 +187,7 @@ In addition, you also need to change the `epoch` value in the `<Project Name>/ev
 
 For both evaluations, you can set `--save` to 1 to save the robot routes and time.
 These running histories are then used to generate the results shown in the paper. 
-Run the following commands to evaluate the history by yourself (use Python 3 environment):
+Run the following commands to evaluate the history by yourself:
 
 ```bash
 source <Dir to Python 3 Virtual Env>/bin/activate
@@ -219,19 +211,19 @@ with red dot as goal positions, blue dot as start positions, and red cross as co
 #### 3. Evaluate in real-world environment ####
 
 Our implementation of real-world evaluate relies on the **amcl** to localize the robot and generate relative goal positions.
-Therefore, to evaluate the trained SNN in real-world environment, you have to first generate a map of the environment using GMapping (use Python 2 environment):
+Therefore, to evaluate the trained SNN in real-world environment, you have to first generate a map of the environment using GMapping:
 
 ```bash
 roslaunch turtlebot_lidar gmapping_lplidar_demo.launch
 ```
 
-Then, you can use the saved map to localize the robot's pose (use Python 2 environment):
+Then, you can use the saved map to localize the robot's pose:
 
 ```bash
 roslaunch turtlebot_lidar amcl_lplidar_demo.launch map_file:=<Dir to map>
 ```
 
-You can view the robot navigation using **rviz** by running in a separate terminal (use Python 2 environment):
+You can view the robot navigation using **rviz** by running in a separate terminal:
 
 ```bash
 roslaunch turtlebot_rviz_launchers view_navigation.launch
@@ -240,7 +232,7 @@ roslaunch turtlebot_rviz_launchers view_navigation.launch
 After verifying that the robot can correctly localize itself in the environment, you can start to evaluate the trained SNN.
 Here, we only support the evaluation on Loihi.
 To deploy the trained SNN on Loihi, you need to have the Loihi hardware.
-If you have the Kapoho Bay USB chipset, run the following commands to start the evaluation (use Python 3 environment):
+If you have the Kapoho Bay USB chipset, run the following commands to start the evaluation:
 
 ```bash
 source <Dir to Python 3 Virtual Env>/bin/activate
